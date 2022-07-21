@@ -1,5 +1,7 @@
 package com.mobproject.weatherapp;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -33,40 +35,32 @@ public class MainActivity extends AppCompatActivity {
         et_dataInput = findViewById(R.id.et_dataInput);
         lv_weatherReport = findViewById(R.id.lv_weatherReports);
 
+        final WeatherDataService weatherDataService = new WeatherDataService(MainActivity.this);
+
         btn_cityID.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                String url = "https://api.openweathermap.org/data/2.5/weather?q=" + et_dataInput.getText().toString() + "&APPID=c470906f50ead8554e0027c2bf83deec";
-
-                JsonObjectRequest request = new JsonObjectRequest(url, new Response.Listener<JSONObject>() {
+                weatherDataService.getCityID(et_dataInput.getText().toString(), new WeatherDataService.VolleyResponseListener() {
                     @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            System.out.println(response);
-                            System.out.println(response.getJSONObject("coord"));
-                            Toast.makeText(MainActivity.this, "City ID is: "
-                                            + response.getJSONArray("weather")
-                                            .getJSONObject(0)
-                                            .get("id").toString(),
-                                    Toast.LENGTH_SHORT).show();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                    public void onError(String message) {
+                        Toast.makeText(MainActivity.this, "Something wrong", Toast.LENGTH_SHORT).show();
                     }
-                }, new Response.ErrorListener() {
+
                     @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, error.toString(), Toast.LENGTH_SHORT).show();
+                    public void onResponse(String cityID) {
+                        Toast.makeText(MainActivity.this, "Returned an ID of " + cityID, Toast.LENGTH_SHORT).show();
                     }
                 });
-                MySingleton.getInstance(MainActivity.this).addToRequestQueue(request);
+
+
             }
         });
 
         btn_getWeatherByID.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.stackoverflow.com")));
                 Toast.makeText(MainActivity.this, "You clicked me 2", Toast.LENGTH_SHORT).show();
             }
         });
