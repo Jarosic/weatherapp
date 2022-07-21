@@ -1,7 +1,5 @@
 package com.mobproject.weatherapp;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -52,16 +50,23 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "Returned an ID of " + cityID, Toast.LENGTH_SHORT).show();
                     }
                 });
-
-
             }
         });
 
         btn_getWeatherByID.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.stackoverflow.com")));
-                Toast.makeText(MainActivity.this, "You clicked me 2", Toast.LENGTH_SHORT).show();
+                weatherDataService.getCityForecastByID(et_dataInput.getText().toString(), new WeatherDataService.ForeCastByIDResponse() {
+                    @Override
+                    public void onError(String message) {
+                        Toast.makeText(MainActivity.this, "Something wrong", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onResponse(WeatherReportModel weatherReportModel) {
+                        Toast.makeText(MainActivity.this, "Returned an ID of " + weatherReportModel.toString(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
 
