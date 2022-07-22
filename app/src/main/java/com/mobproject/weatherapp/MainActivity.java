@@ -2,12 +2,13 @@ package com.mobproject.weatherapp;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -16,11 +17,13 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button btn_cityID, btn_getWeatherByID, btn_getWeatherByName;
     private EditText et_dataInput;
-    private RecyclerView lv_weatherReport;
+    private ListView lv_weatherReport;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
-
+        // 707471
         btn_getWeatherByID.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -63,8 +66,9 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onResponse(WeatherReportModel weatherReportModel) {
-                        Toast.makeText(MainActivity.this, "Returned an ID of " + weatherReportModel.toString(), Toast.LENGTH_SHORT).show();
+                    public void onResponse(List<WeatherReportModel> weatherReportModel) {
+                        ArrayAdapter arrayAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, weatherReportModel);
+                        lv_weatherReport.setAdapter(arrayAdapter);
                     }
                 });
             }

@@ -36,7 +36,7 @@ public class WeatherDataService {
 
         void onError(String message);
 
-        void onResponse(WeatherReportModel weatherReportModel);
+        void onResponse(List<WeatherReportModel> weatherReportModel);
     }
 
     public void getCityID(String cityName, VolleyResponseListener volleyResponseListener) {
@@ -73,22 +73,23 @@ public class WeatherDataService {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    JSONArray consolidateWeatherList = response
-                            .getJSONArray("list")
-                            .getJSONObject(0)
-                            .getJSONArray("weather");
 
-                    WeatherReportModel firstDay = new WeatherReportModel();
+                    JSONArray consolidateWeatherList = response.getJSONArray("list");
+                    List<WeatherReportModel> weatherReportModels = new ArrayList<>();
+                    System.out.println("weather list: " + consolidateWeatherList);
+                    for (int i = 0; i < consolidateWeatherList.length(); i++) {
+                        JSONArray weather = consolidateWeatherList.getJSONObject(i).getJSONArray("weather");
 
-                    JSONObject firstDayFromApi = (JSONObject) consolidateWeatherList.get(0);
-                    System.out.println(firstDayFromApi);
-                    firstDay.setId(firstDayFromApi.getInt("id"));
-                    firstDay.setDescription(firstDayFromApi.getString("description"));
-                    firstDay.setMain(firstDayFromApi.getString("main"));
-                    firstDay.setIcon(firstDayFromApi.getString("icon"));
-
-                    foreCastByIDResponse.onResponse(firstDay);
-
+                        WeatherReportModel oneDayWeather = new WeatherReportModel();
+                        JSONObject firstDayFromApi = (JSONObject) weather.get(0);
+                        System.out.println(firstDayFromApi);
+                        oneDayWeather.setId(firstDayFromApi.getInt("id"));
+                        oneDayWeather.setDescription(firstDayFromApi.getString("description"));
+                        oneDayWeather.setMain(firstDayFromApi.getString("main"));
+                        oneDayWeather.setIcon(firstDayFromApi.getString("icon"));
+                        weatherReportModels.add(oneDayWeather);
+                    }
+                    foreCastByIDResponse.onResponse(weatherReportModels);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
