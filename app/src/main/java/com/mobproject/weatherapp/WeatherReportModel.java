@@ -2,19 +2,19 @@ package com.mobproject.weatherapp;
 
 public class WeatherReportModel {
 
-    private String cityID;
+    private String cityNameOrID;
     private String dt_txt;
     private String description;
     private Double feels_like;
     private Double temp_min;
     private Double temp_max;
 
-    public String getCityID() {
-        return cityID;
+    public String getCityNameOrID() {
+        return cityNameOrID;
     }
 
-    public void setCityID(String cityID) {
-        this.cityID = cityID;
+    public void setCityNameOrID(String cityNameOrID) {
+        this.cityNameOrID = cityNameOrID;
     }
 
     public String getDt_txt() {
@@ -62,7 +62,7 @@ public class WeatherReportModel {
 
     @Override
     public String toString() {
-        return "CITY ID: " + cityID + ",\n" +
+        return "CITY: " + cityNameOrID + ",\n" +
                 "DATE: " + dt_txt + ",\n" +
                 "DESCRIPTION: '" + description + "',\n" +
                 "FEELS LIKE: " + feels_like + ",\n" +

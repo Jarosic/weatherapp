@@ -17,7 +17,7 @@ public class WeatherDataService {
 
     public static String QUERY_FOR_CITY_ID = "https://api.openweathermap.org/data/2.5/weather?q=";
     public static String QUERY_FOR_CITY_WEATHER_BY_ID = "https://api.openweathermap.org/data/2.5/forecast?id=";
-    public static String QUERY_FOR_CITY_WEATHER_BY_NAME = "https://api.openweathermap.org/data/2.5/forecast?name=";
+    public static String QUERY_FOR_CITY_WEATHER_BY_NAME = "https://api.openweathermap.org/data/2.5/forecast?q=";
     private final Context context;
     private String cityID;
 
@@ -32,51 +32,13 @@ public class WeatherDataService {
         void onResponse(String cityID);
     }
 
-    public interface ForeCastByIDResponse {
+    public interface ForecastResponse {
 
         void onError(String message);
 
         void onResponse(List<WeatherReportModel> weatherReportModel);
     }
 
-    //    "list": [
-//    {
-//        "dt": 1658491200,
-//            "main": {
-//        "temp": 303.93,
-//                "feels_like": 302.75,
-//                "temp_min": 303.93,
-//                "temp_max": 306.26,
-//                "pressure": 1016,
-//                "sea_level": 1016,
-//                "grnd_level": 987,
-//                "humidity": 31,
-//                "temp_kf": -2.33
-//    },
-//        "weather": [
-//        {
-//            "id": 800,
-//                "main": "Clear",
-//                "description": "clear sky",
-//                "icon": "01d"
-//        }
-//],
-//        "clouds": {
-//        "all": 0
-//    },
-//        "wind": {
-//        "speed": 4.21,
-//                "deg": 355,
-//                "gust": 5.72
-//    },
-//        "visibility": 10000,
-//            "pop": 0,
-//            "sys": {
-//        "pod": "d"
-//    },
-//        "dt_txt": "2022-07-22 12:00:00"
-//    },
-    // "https://api.openweathermap.org/data/2.5/forecast?id=707471&APPID=c470906f50ead8554e0027c2bf83deec"
     public void getCityID(String cityName, VolleyResponseListener volleyResponseListener) {
         String url = QUERY_FOR_CITY_ID + cityName + "&APPID=c470906f50ead8554e0027c2bf83deec";
 
@@ -102,40 +64,15 @@ public class WeatherDataService {
         MySingleton.getInstance(context).addToRequestQueue(request);
     }
 
-    public void getCityForecastByID(String cityID, ForeCastByIDResponse foreCastByIDResponse) {
+    public void getCityForecastByID(String cityID, ForecastResponse forecastResponse) {
 
         String url = QUERY_FOR_CITY_WEATHER_BY_ID + cityID + "&cnt=5&appid=c470906f50ead8554e0027c2bf83deec";
-        System.out.println(url);
         JsonObjectRequest request = new JsonObjectRequest(url, new Response.Listener<JSONObject>() {
 
             @Override
             public void onResponse(JSONObject response) {
                 try {
-
-                    JSONArray consolidateWeatherList = response.getJSONArray("list");
-                    List<WeatherReportModel> weatherReportModels = new ArrayList<>();
-                    System.out.println("weather list: " + consolidateWeatherList);
-
-                    for (int i = 0; i < consolidateWeatherList.length(); i++) {
-
-                        JSONArray weather = consolidateWeatherList.getJSONObject(i).getJSONArray("weather");
-                        JSONObject main = (JSONObject) consolidateWeatherList.getJSONObject(i).getJSONObject("main");
-                        String date = consolidateWeatherList.getJSONObject(i).getString("dt_txt");
-
-                        System.out.println("DATE: " + date);
-
-                        WeatherReportModel oneDayWeather = new WeatherReportModel();
-                        String description = weather.getJSONObject(0).getString("description");
-
-                        oneDayWeather.setCityID(cityID);
-                        oneDayWeather.setDt_txt(date.substring(0, 10));
-                        oneDayWeather.setDescription(description);
-                        oneDayWeather.setFeels_like(main.getDouble("feels_like"));
-                        oneDayWeather.setTemp_max(main.getDouble("temp_max"));
-                        oneDayWeather.setTemp_min(main.getDouble("temp_min"));
-                        weatherReportModels.add(oneDayWeather);
-                    }
-                    foreCastByIDResponse.onResponse(weatherReportModels);
+                    forecastResponse.onResponse(getWeatherReportModels(response, cityID));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -143,16 +80,59 @@ public class WeatherDataService {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                foreCastByIDResponse.onError(error.getMessage());
+                forecastResponse.onError(error.getMessage());
             }
         });
 
         MySingleton.getInstance(context).addToRequestQueue(request);
-
-        List<WeatherReportModel> report = new ArrayList<>();
     }
-//
-//    public List<WeatherReportModel>  getCityForecastByName(String cityName) {
-//
-//    }
+
+    public void getCityForecastByName(String cityName, ForecastResponse forecastResponse) {
+        String url = QUERY_FOR_CITY_WEATHER_BY_NAME + cityName + "&cnt=5&appid=c470906f50ead8554e0027c2bf83deec";
+        System.out.println(url);
+        JsonObjectRequest request = new JsonObjectRequest(url, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    forecastResponse.onResponse(getWeatherReportModels(response, cityName));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                forecastResponse.onError(error.getMessage());
+            }
+        });
+
+        MySingleton.getInstance(context).addToRequestQueue(request);
+    }
+
+    private List<WeatherReportModel> getWeatherReportModels(JSONObject response, String cityNameOrID) throws JSONException {
+
+        JSONArray consolidateWeatherList = response.getJSONArray("list");
+        List<WeatherReportModel> weatherReportModels = new ArrayList<>();
+        System.out.println("weather list: " + consolidateWeatherList);
+
+        for (int i = 0; i < consolidateWeatherList.length(); i++) {
+
+            JSONArray weather = consolidateWeatherList.getJSONObject(i).getJSONArray("weather");
+            JSONObject main = (JSONObject) consolidateWeatherList.getJSONObject(i).getJSONObject("main");
+            String date = consolidateWeatherList.getJSONObject(i).getString("dt_txt");
+            String description = weather.getJSONObject(0).getString("description");
+
+            WeatherReportModel oneDayWeather = new WeatherReportModel();
+
+            oneDayWeather.setCityNameOrID(cityNameOrID);
+            oneDayWeather.setDt_txt(date.substring(0, 10));
+            oneDayWeather.setDescription(description);
+            oneDayWeather.setFeels_like(main.getDouble("feels_like"));
+            oneDayWeather.setTemp_max(main.getDouble("temp_max"));
+            oneDayWeather.setTemp_min(main.getDouble("temp_min"));
+            weatherReportModels.add(oneDayWeather);
+        }
+        return weatherReportModels;
+    }
 }
