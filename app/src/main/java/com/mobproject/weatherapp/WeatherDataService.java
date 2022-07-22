@@ -39,6 +39,44 @@ public class WeatherDataService {
         void onResponse(List<WeatherReportModel> weatherReportModel);
     }
 
+    //    "list": [
+//    {
+//        "dt": 1658491200,
+//            "main": {
+//        "temp": 303.93,
+//                "feels_like": 302.75,
+//                "temp_min": 303.93,
+//                "temp_max": 306.26,
+//                "pressure": 1016,
+//                "sea_level": 1016,
+//                "grnd_level": 987,
+//                "humidity": 31,
+//                "temp_kf": -2.33
+//    },
+//        "weather": [
+//        {
+//            "id": 800,
+//                "main": "Clear",
+//                "description": "clear sky",
+//                "icon": "01d"
+//        }
+//],
+//        "clouds": {
+//        "all": 0
+//    },
+//        "wind": {
+//        "speed": 4.21,
+//                "deg": 355,
+//                "gust": 5.72
+//    },
+//        "visibility": 10000,
+//            "pop": 0,
+//            "sys": {
+//        "pod": "d"
+//    },
+//        "dt_txt": "2022-07-22 12:00:00"
+//    },
+    // "https://api.openweathermap.org/data/2.5/forecast?id=707471&APPID=c470906f50ead8554e0027c2bf83deec"
     public void getCityID(String cityName, VolleyResponseListener volleyResponseListener) {
         String url = QUERY_FOR_CITY_ID + cityName + "&APPID=c470906f50ead8554e0027c2bf83deec";
 
@@ -77,16 +115,24 @@ public class WeatherDataService {
                     JSONArray consolidateWeatherList = response.getJSONArray("list");
                     List<WeatherReportModel> weatherReportModels = new ArrayList<>();
                     System.out.println("weather list: " + consolidateWeatherList);
+
                     for (int i = 0; i < consolidateWeatherList.length(); i++) {
+
                         JSONArray weather = consolidateWeatherList.getJSONObject(i).getJSONArray("weather");
+                        JSONObject main = (JSONObject) consolidateWeatherList.getJSONObject(i).getJSONObject("main");
+                        String date = consolidateWeatherList.getJSONObject(i).getString("dt_txt");
+
+                        System.out.println("DATE: " + date);
 
                         WeatherReportModel oneDayWeather = new WeatherReportModel();
-                        JSONObject firstDayFromApi = (JSONObject) weather.get(0);
-                        System.out.println(firstDayFromApi);
-                        oneDayWeather.setId(firstDayFromApi.getInt("id"));
-                        oneDayWeather.setDescription(firstDayFromApi.getString("description"));
-                        oneDayWeather.setMain(firstDayFromApi.getString("main"));
-                        oneDayWeather.setIcon(firstDayFromApi.getString("icon"));
+                        String description = weather.getJSONObject(0).getString("description");
+
+                        oneDayWeather.setCityID(cityID);
+                        oneDayWeather.setDt_txt(date.substring(0, 10));
+                        oneDayWeather.setDescription(description);
+                        oneDayWeather.setFeels_like(main.getDouble("feels_like"));
+                        oneDayWeather.setTemp_max(main.getDouble("temp_max"));
+                        oneDayWeather.setTemp_min(main.getDouble("temp_min"));
                         weatherReportModels.add(oneDayWeather);
                     }
                     foreCastByIDResponse.onResponse(weatherReportModels);
